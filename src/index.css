@@ -21,7 +21,10 @@ code {
     monospace;
 }
 
-.App {
-  font-family: sans-serif;
-  text-align: center;
+.number {
+  background-color: rgb(203, 45, 45);
+}
+
+.roman-number {
+  background-color: rgb(145, 82, 6);
 }

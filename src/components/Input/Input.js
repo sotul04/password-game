@@ -6,7 +6,7 @@ export default function Input({ value, onChange, highlight }) {
         <section className="w-screen">
             <div className="max-w-3xl p-5 mr-auto ml-auto">
                 <span className="flex justify-between">
-                    <span className="text-xl">Please choose a password</span>
+                    <span className="text-xl text-gray-600">Please choose a password</span>
                     <span className="text-xl animate-bounce w-14 text-right">{value.length > 0 ? value.length : ""}</span>
                 </span>
                 <div className="flex items-center mt-1.5">
