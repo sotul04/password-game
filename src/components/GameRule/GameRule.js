@@ -14,12 +14,12 @@ export default function GameRule({ number, type, description, onRefresh, isSatis
                 <span>{description}</span>
                 {type === 'country' &&
                     <div className='flex justify-center mt-1'>
-                        {images.map((image, index) => <img key={index} src={image} alt='country-flag' className='w-20 my-2 mx-4 hover:scale-110 transition' />)}
+                        {images.map((item, index) => <img key={index} src={item.image} alt='country-flag' className='w-20 my-2 mx-4 hover:scale-110 transition' />)}
                     </div>
                 }
                 {type === 'captcha' &&
                     <div className='flex justify-center mt-3'>
-                        <img src={images} alt='captcha-image' className='w-52 border-black border rounded-lg transition hover:scale-105' />
+                        <img src={images.image} alt='captcha-image' className='w-52 border-black border rounded-lg' />
                         <button onClick={onRefresh}>
                             <img src={refreshIcon} className='w-6 cursor-pointer hover:scale-110 transition ml-3' alt='refresh-button'/>
                         </button>
