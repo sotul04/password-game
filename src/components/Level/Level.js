@@ -9,7 +9,7 @@ export default function Level({ level, onChange }) {
 
     return (
         <section className="w-screen">
-            <div className="max-w-3xl px-5 pb-5 mr-auto ml-auto flex flex-col">
+            <div className="max-w-3xl px-5 pb-1 mr-auto ml-auto flex flex-col">
                 <span className="text-lg mb-1 text-gray-600">Choose your diffculty</span>
                 <div className="inline-flex ">
                     <div className='min-w-[150px] relative inline-flex rounded-md bg-white'>

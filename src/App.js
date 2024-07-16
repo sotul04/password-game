@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
 
+// game components
 import Input from "./components/Input/Input";
 import GameRule from "./components/GameRule/GameRule";
 import Level from "./components/Level/Level";
+import Header from "./components/Header/Header";
 
+//utils
 import { highlight } from "./util/highlight";
 import arrayBufferToUrl from "./util/image-decoder";
 import intervalRandom from "./util/random";
+import getPasswordScore from "./util/password-score";
+
+//local-storage
+const localGameName = 'bestPasswordGameScore'
+const bestScore = JSON.parse(localStorage.getItem(localGameName)) || 0;
 
 export default function App() {
 
@@ -21,6 +29,10 @@ export default function App() {
     image: null
   });
   const [currentFlags, setCurrentFlags] = useState([]); 
+  const [score, setScore] = useState({
+    score: 0,
+    bestScore: 0
+  });
 
   // loading flags and captchas
   useEffect(() => {
@@ -97,14 +109,20 @@ export default function App() {
 
   function handlePasswordChange(newPassword) {
     setCurrentPassword(newPassword);
+    setScore(prevScore => {
+      const newScore = getPasswordScore(newPassword);
+      return {
+        score: newScore,
+        bestScore: prevScore.bestScore,
+      }
+    });
   }
 
   return (
     <>
+      <Header score={score}/>
       <Input value={currentPassword} onChange={handlePasswordChange} highlight={highlight} />
-      <div className="m-auto">
-        <Level level={level} onChange={handleLevelChange} />
-      </div>
+      <Level level={level} onChange={handleLevelChange} />
       <section className="w-screen">
         <div className="max-w-3xl p-5 mr-auto ml-auto">
           <GameRule number={1} description={'Password must strong.'} type={'plain'} isSatisfied={true} />
