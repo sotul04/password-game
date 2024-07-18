@@ -1,5 +1,5 @@
 import HighlightWithinTextarea from "react-highlight-within-textarea";
-import './input.css'
+import './input.css';
 
 export default function Input({ value, onChange, highlight }) {
     return (

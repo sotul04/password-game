@@ -1,6 +1,15 @@
 import { extractRomanNumber, extractNumber } from "./extract";
 
-export const highlight = [];
+export const highlight = [
+    {
+        highlight: [],
+        className: 'roman-number'
+    },
+    {
+        highlight: [],
+        className: 'number'
+    }
+];
 
 export function addRomanHighlight(newPassword) {
     let found = -1;
@@ -13,14 +22,7 @@ export function addRomanHighlight(newPassword) {
     const romanNumbers = extractRomanNumber(newPassword);
     const regex = romanNumbers.map((item) => new RegExp(`${item}`,'g'));
     
-    if (found === -1) {
-        highlight.push({
-            highlight: regex,
-            className: 'roman-number'
-        })
-    } else {
-        highlight[found].highlight = regex;
-    }
+    highlight[0].highlight = regex;
 }
 
 export function addNumberHighlight(newPassword) {
@@ -35,18 +37,13 @@ export function addNumberHighlight(newPassword) {
     const numbers = extractNumber(newPassword);
     const regex = numbers.map((item) => new RegExp(`${item}`,'g'));
     
-    if (found === -1) {
-        highlight.push({
-            highlight: regex,
-            className: 'number'
-        })
-    } else {
-        highlight[found].highlight = regex;
-    }
+    highlight[1].highlight = regex;
 }
 
-export function clearHighlight() {
-    while (highlight.length !== 0) {
-        highlight.pop();
-    }
+export function clearNumberHighlight() {
+    highlight[1].highlight = [];
+}
+
+export function clearRomanHighlight() {
+    highlight[0].highlight = [];
 }

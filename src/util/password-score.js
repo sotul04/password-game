@@ -1,12 +1,12 @@
-function countUppercaseLetters(str) {
+export function countUppercaseLetters(str) {
     return str.split('').filter(char => /[A-Z]/.test(char)).length;
 }
 
-function countDigits(str) {
+export function countDigits(str) {
     return str.split('').filter(char => /\d/.test(char)).length;
 }
 
-function countSpecialCharacters(str) {
+export function countSpecialCharacters(str) {
     return str.split('').filter(char => /[^a-zA-Z0-9]/.test(char)).length;
 }
 

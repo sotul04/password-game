@@ -1,25 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // game components
 import Input from "./components/Input/Input";
-import GameRule from "./components/GameRule/GameRule";
 import Level from "./components/Level/Level";
 import Header from "./components/Header/Header";
+import RuleBox from "./components/RuleBox/RuleBox";
 
 //utils
 import { highlight } from "./util/highlight";
 import arrayBufferToUrl from "./util/image-decoder";
 import intervalRandom from "./util/random";
 import getPasswordScore from "./util/password-score";
+import stringMatch from "./util/kmp";
+import { extractDigit } from "./util/extract";
+
+import PASSWORD from "./model/Password";
+import SCORE, {LEVEL} from "./model/Score";
+import RULES, {checkPassword} from "./model/Rule";
+import FLAG_CAPTCHA from "./model/FlagCaptcha";
 
 //local-storage
-const localGameName = 'bestPasswordGameScore'
+const localGameName = 'bestPasswordGameScore';
 const bestScore = JSON.parse(localStorage.getItem(localGameName)) || 0;
+let initState = true;
 
 export default function App() {
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [level, setLevel] = useState('Easy');
+  const timer = useRef(null);
+
+  const [currentPassword, setCurrentPassword] = useState(PASSWORD.currentPassword);
   const [flags, setFlags] = useState([]);
   const [captchas, setCaptchas] = useState([]);
 
@@ -28,17 +37,22 @@ export default function App() {
     description: 'loading-description...',
     image: null
   });
-  const [currentFlags, setCurrentFlags] = useState([]); 
+  const [currentFlags, setCurrentFlags] = useState([]);
+  const [level, setLevel] = useState('Easy');
   const [score, setScore] = useState({
     score: 0,
-    bestScore: 0
+    bestScore: bestScore
   });
+  const [ruleSatisfied, setRuleSatisfied] = useState({
+    ...RULES
+  });
+  const [inputHighlight, setInputHighlight] = useState([...highlight]);
 
   // loading flags and captchas
   useEffect(() => {
     async function fetchFlags() {
       try {
-        const response = await fetch('http://localhost:3000/flags');
+        const response = await fetch('https://bepassword-game.vercel.app/flags');
         if (!response.ok) {
           throw new Error('Failed to fetch images');
         }
@@ -58,7 +72,7 @@ export default function App() {
 
     async function fetchCaptchas() {
       try {
-        const response = await fetch('http://localhost:3000/captchas');
+        const response = await fetch('https://bepassword-game.vercel.app/captchas');
         if (!response.ok) {
           throw new Error('Failed to fetch images');
         }
@@ -82,13 +96,17 @@ export default function App() {
 
   //trigger current flags
   useEffect(() => {
-    setCurrentFlags(flags.slice(0,Math.min(3, flags.length)));
+    const selectedFlags = flags.slice(0, Math.min(3, flags.length));
+    FLAG_CAPTCHA.currentFlags = selectedFlags;
+    setCurrentFlags(selectedFlags);
   }, [flags]);
 
   //trigger current captcha
   useEffect(() => {
     if (captchas.length === 0) return;
-    setCurrentCaptcha(captchas[intervalRandom(captchas.length)]);
+    const selectedCaptcha = captchas[intervalRandom(captchas.length)];
+    FLAG_CAPTCHA.currentCaptcha = selectedCaptcha;
+    setCurrentCaptcha(selectedCaptcha);
   }, [captchas]);
 
   function handleRefreshCaptcha() {
@@ -98,39 +116,50 @@ export default function App() {
     do {
       newIndex = intervalRandom(captchaLength);
     } while (captchas[newIndex].title === currentCaptcha.title);
-    console.log("New captcha:", newIndex);
+    FLAG_CAPTCHA.currentCaptcha = captchas[newIndex];
     setCurrentCaptcha(captchas[newIndex]);
   }
 
   function handleLevelChange(newLevel) {
+    SCORE.level = LEVEL[newLevel];
     setLevel(newLevel);
-    console.log('This is the new Level:', newLevel);
   }
 
   function handlePasswordChange(newPassword) {
-    setCurrentPassword(newPassword);
-    setScore(prevScore => {
-      const newScore = getPasswordScore(newPassword);
-      return {
-        score: newScore,
-        bestScore: prevScore.bestScore,
-      }
-    });
+    const newPass = newPassword || "";
+    PASSWORD.currentPassword = newPass;
+    setCurrentPassword(newPass);
   }
+
+  // For password change reevaluation
+  useEffect(() => {
+    if (initState) {
+      initState = false;
+    } else {
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        SCORE.addition = getPasswordScore(currentPassword);
+        checkPassword();
+        const newScore = SCORE.addition + SCORE.score;
+        console.log(highlight);
+        setScore(prevScore => {
+          return {
+            score: newScore,
+            bestScore: prevScore.bestScore
+          }
+        });
+        setRuleSatisfied({ ...RULES });
+        setInputHighlight([...highlight]);
+      }, 200);
+    }
+  }, [currentPassword, level]);
 
   return (
     <>
-      <Header score={score}/>
-      <Input value={currentPassword} onChange={handlePasswordChange} highlight={highlight} />
+      <Header score={score} />
+      <Input value={currentPassword} onChange={handlePasswordChange} highlight={inputHighlight} />
       <Level level={level} onChange={handleLevelChange} />
-      <section className="w-screen">
-        <div className="max-w-3xl p-5 mr-auto ml-auto">
-          <GameRule number={1} description={'Password must strong.'} type={'plain'} isSatisfied={true} />
-          <GameRule number={2} description={'Password must not strong.'} type={'plain'} isSatisfied={false} />
-          <GameRule number={3} description={'Password must include this captcha:'} type={'captcha'} isSatisfied={false} images={currentCaptcha} onRefresh={handleRefreshCaptcha}/>
-          <GameRule number={4} description={'Password must include one of this country:'} type={'country'} isSatisfied={true} images={currentFlags} />
-        </div>
-      </section>
+      <RuleBox rulesState={ruleSatisfied} flags={currentFlags} captcha={currentCaptcha} onCaptchaRefresh={handleRefreshCaptcha}/>
     </>
   );
 }

@@ -5,7 +5,7 @@ import refreshIcon from '../../assets/Refresh_4.png'
 
 export default function GameRule({ number, type, description, onRefresh, isSatisfied, images }) {
     return (
-        <div className={`${isSatisfied ? 'border-green-700 shadow-green-200 shadow-md' : 'border-red-700 shadow-red-200 shadow-md'} border rounded-xl rule-popup text-black relative text-left mt-4 mb-6`}>
+        <div className={`${isSatisfied ? 'border-green-700 shadow-green-200 shadow-md' : 'border-red-700 shadow-red-200 shadow-md'} border rounded-xl rule-popup text-black relative text-left mt-4 mb-6 transition`}>
             <span className={`flex ${isSatisfied ? 'bg-emerald-300' : 'bg-rose-300'} rounded-t-xl px-5 py-3`}>
                 <img src={isSatisfied ? checkMark : errorMark} className='relative w-5 h-5 top-1 -left-1 pointer-events-none' alt='indicator-image' />
                 <span className='text-left text-xl pl-2'>Rule {number}</span>
