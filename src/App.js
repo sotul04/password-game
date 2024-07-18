@@ -15,8 +15,8 @@ import stringMatch from "./util/kmp";
 import { extractDigit } from "./util/extract";
 
 import PASSWORD from "./model/Password";
-import SCORE, {LEVEL} from "./model/Score";
-import RULES, {checkPassword} from "./model/Rule";
+import SCORE, { LEVEL } from "./model/Score";
+import RULES, { checkPassword } from "./model/Rule";
 import FLAG_CAPTCHA from "./model/FlagCaptcha";
 
 //local-storage
@@ -133,25 +133,25 @@ export default function App() {
 
   // For password change reevaluation
   useEffect(() => {
-    if (initState) {
-      initState = false;
-    } else {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => {
-        SCORE.addition = getPasswordScore(currentPassword);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      SCORE.addition = getPasswordScore(currentPassword);
+      if (!initState){
         checkPassword();
-        const newScore = SCORE.addition + SCORE.score;
-        console.log(highlight);
-        setScore(prevScore => {
-          return {
-            score: newScore,
-            bestScore: prevScore.bestScore
-          }
-        });
-        setRuleSatisfied({ ...RULES });
-        setInputHighlight([...highlight]);
-      }, 200);
-    }
+      } else {
+        initState = false;
+      }
+      const newScore = SCORE.addition + SCORE.score;
+      console.log(highlight);
+      setScore(prevScore => {
+        return {
+          score: newScore,
+          bestScore: prevScore.bestScore
+        }
+      });
+      setRuleSatisfied({ ...RULES });
+      setInputHighlight([...highlight]);
+    }, 200);
   }, [currentPassword, level]);
 
   return (
@@ -159,7 +159,7 @@ export default function App() {
       <Header score={score} />
       <Input value={currentPassword} onChange={handlePasswordChange} highlight={inputHighlight} />
       <Level level={level} onChange={handleLevelChange} />
-      <RuleBox rulesState={ruleSatisfied} flags={currentFlags} captcha={currentCaptcha} onCaptchaRefresh={handleRefreshCaptcha}/>
+      <RuleBox rulesState={ruleSatisfied} flags={currentFlags} captcha={currentCaptcha} onCaptchaRefresh={handleRefreshCaptcha} />
     </>
   );
 }
