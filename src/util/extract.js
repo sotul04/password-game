@@ -17,6 +17,5 @@ export function extractDigit(strings) {
 export function extractRomanNumber(strings) {
     const numbers = strings.match(romanNumberPattern) || [];
     const romans = numbers.filter(string => string !== '');
-    console.log('Roman Number:', romans);
     return romans;
 }

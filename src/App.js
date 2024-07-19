@@ -10,9 +10,10 @@ import RuleBox from "./components/RuleBox/RuleBox";
 import { highlight } from "./util/highlight";
 import arrayBufferToUrl from "./util/image-decoder";
 import intervalRandom from "./util/random";
-import getPasswordScore from "./util/password-score";
+import getPasswordScore, { eraseLastOnePassword } from "./util/password-score";
 import stringMatch from "./util/kmp";
 import { extractDigit } from "./util/extract";
+import isFire from "./util/probs";
 
 import PASSWORD from "./model/Password";
 import SCORE, { LEVEL } from "./model/Score";
@@ -27,6 +28,7 @@ let initState = true;
 export default function App() {
 
   const timer = useRef(null);
+  const fireRule = useRef(null);
 
   const [currentPassword, setCurrentPassword] = useState(PASSWORD.currentPassword);
   const [flags, setFlags] = useState([]);
@@ -126,23 +128,59 @@ export default function App() {
   }
 
   function handlePasswordChange(newPassword) {
-    const newPass = newPassword || "";
-    PASSWORD.currentPassword = newPass;
-    setCurrentPassword(newPass);
+    PASSWORD.currentPassword = newPassword;
+    setCurrentPassword(newPassword);
+  }
+
+  function handleFireRule() {
+    fireRule.current = setInterval(() => {
+      if (RULES.rules[9].isActive) {
+        if (isFire() || RULES.rules[9].isFirstTime) {
+          const newPassword = PASSWORD.currentPassword+'🔥';
+          console.log(newPassword);
+          RULES.rules[9].isFirstTime = false;
+          handlePasswordChange(newPassword);
+        }
+        const indexFire = stringMatch(PASSWORD.currentPassword, '🔥');
+        if (indexFire !== -1) {
+          const newPassword = eraseLastOnePassword(PASSWORD.currentPassword);
+          handlePasswordChange(newPassword);
+        }
+      }
+    },5000);
   }
 
   // For password change reevaluation
   useEffect(() => {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      SCORE.addition = getPasswordScore(currentPassword);
+      RULES.indexCheat = stringMatch(PASSWORD.currentPassword, 'cheat');
+      if (RULES.indexCheat !== -1) {
+        RULES.rules[RULES.currentRuleNumber-1].cheat();
+        if (PASSWORD.currentPassword !== currentPassword) {
+          handlePasswordChange(PASSWORD.currentPassword);
+        }
+      }
+
+      // checking password
       if (!initState){
         checkPassword();
       } else {
         initState = false;
       }
+
+      // activate password fire rule
+      if (RULES.currentRuleNumber >= 10) {
+        if (RULES.rules[9].isActive && RULES.rules[9].isFirstTime) {
+          handleFireRule();
+        } else if (!RULES.rules[9].isActive && fireRule.current !== null) {
+          clearInterval(fireRule.current);
+        }
+      }
+
+      // reevaluate the state
+      SCORE.addition = getPasswordScore(currentPassword);
       const newScore = SCORE.addition + SCORE.score;
-      console.log(highlight);
       setScore(prevScore => {
         return {
           score: newScore,

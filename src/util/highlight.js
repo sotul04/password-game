@@ -18,7 +18,6 @@ export function addRomanHighlight(newPassword) {
             found = i;
         }
     }
-    console.log('Roman highlight');
     const romanNumbers = extractRomanNumber(newPassword);
     const regex = romanNumbers.map((item) => new RegExp(`${item}`,'g'));
     
@@ -32,7 +31,6 @@ export function addNumberHighlight(newPassword) {
             found = i;
         }
     }
-    console.log('Number highlight');
 
     const numbers = extractNumber(newPassword);
     const regex = numbers.map((item) => new RegExp(`${item}`,'g'));
