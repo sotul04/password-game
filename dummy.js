@@ -57,9 +57,74 @@ function stringMatch(text, pattern) {
     return -1;
 }
 
-const text = 'anjing 🥚🔥';
-console.log(text.length);
-console.log(stringMatch(text, '🔥'));
+function getMatchPosition(text, pattern) {
+    const position = new Array(text.length).fill(false);
+    let prefix = text;
+    let index = 0;
+    while (prefix.length >= pattern.length) {
+        let first = stringMatch(prefix, pattern);
+        if (first !== -1) {
+            console.log('index:', index, ", first:", first);
+            position[first+index] = true;
+            prefix = prefix.substring(first+1, prefix.length);
+            index += first+1;
+        } else {
+            prefix = '';
+        }
+    }
+    return position;
+}
 
-const string = "Halo🔥🔥🔥";
-console.log("Index of:", string.indexOf("🔥"));
+function eatWorm() {
+    const pass = '🥚kontol4.45%VfranceJuneVIIgp7c5🐛🐛🐛🐛🐛🐛🐛🐛asdasd.';
+    const position = getMatchPosition(pass, '🐛');
+    console.log(position);
+    const noWorms = 5;
+
+    const plength = pass.length;
+    const pos = [];
+    for (let i = 0; i < plength; i++) {
+        if (position[i]) {
+            pos.push(i);
+        }
+    }
+    if (pos.length < noWorms) {
+        return false;
+    } else {
+        let prefix = '';
+        let index = 0;
+        for (let i = 0; i < noWorms; i++) {
+            prefix += pass.substring(index, pos[i]);
+            index = pos[i]+2;
+        }
+        if (index < pass.length) {
+            prefix += pass.substring(index, plength);
+        }
+        console.log(prefix);
+        return true;
+    }
+}
+
+function eraseLastOnePassword(password) {
+    const position = getMatchPosition(password, '🔥');
+    let lastIndex = -1;
+    let lastWas = false;
+    for (let i = 0; i < password.length; i++) {
+        if (!position[i]) {
+            if (!lastWas) {
+                lastIndex = i;
+            }
+            lastWas = false;
+        } else if (position[i]) {
+            lastWas = true;
+        }
+    }
+    if (lastIndex != -1) {
+        const prefix = password.substring(0, lastIndex);
+        const suffix = password.substring(lastIndex+1, password.length);
+        return prefix+suffix;
+    }
+    return password;
+}
+
+console.log(eraseLastOnePassword("🔥asdasdadasda1🔥"));

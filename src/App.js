@@ -12,7 +12,7 @@ import LevelDialog from "./components/LevelDialog/LevelDialog";
 import { clearNumberHighlight, clearRomanHighlight, highlight } from "./util/highlight";
 import arrayBufferToUrl from "./util/image-decoder";
 import intervalRandom from "./util/random";
-import getPasswordScore, { eraseLastOnePassword } from "./util/password-score";
+import getPasswordScore, { eatWorm, eraseLastOnePassword } from "./util/password-score";
 import stringMatch from "./util/kmp";
 import { extractDigit } from "./util/extract";
 import isFire from "./util/probs";
@@ -148,21 +148,42 @@ export default function App() {
   }
 
   function handleFireRule() {
-    fireRule.current = setInterval(() => {
-      if (RULES.rules[9].isActive) {
-        if (isFire() || RULES.rules[9].isFirstTime) {
-          const newPassword = PASSWORD.currentPassword + '🔥';
-          console.log(newPassword);
-          RULES.rules[9].isFirstTime = false;
-          handlePasswordChange(newPassword);
+    if (fireRule.current === null) {
+      console.log("Fire is try to attack your password.");
+      fireRule.current = setInterval(() => {
+        if (RULES.rules[9].isActive) {
+          if (isFire() || RULES.rules[9].isFirstTime) {
+            const newPassword = PASSWORD.currentPassword + '🔥';
+            console.log(newPassword);
+            RULES.rules[9].isFirstTime = false;
+            handlePasswordChange(newPassword);
+          }
+          const indexFire = stringMatch(PASSWORD.currentPassword, '🔥');
+          if (indexFire !== -1) {
+            const newPassword = eraseLastOnePassword(PASSWORD.currentPassword);
+            handlePasswordChange(newPassword);
+          }
         }
-        const indexFire = stringMatch(PASSWORD.currentPassword, '🔥');
-        if (indexFire !== -1) {
-          const newPassword = eraseLastOnePassword(PASSWORD.currentPassword);
-          handlePasswordChange(newPassword);
+      }, 8000);
+    }
+  }
+
+  function handleChickenRule() {
+    if (chickenRule.current === null) {
+      console.log("Chicken Rule is activated.");
+      chickenRule.current = setInterval(() => {
+        if (RULES.rules[13].isActive) {
+          if (eatWorm()) {
+            handlePasswordChange(PASSWORD.currentPassword);
+          } else {
+            SCORE.lose = true;
+            setUserWin(SCORE.win);
+            dialogResult.current.open();
+            clearInterval(chickenRule.current);
+          }
         }
-      }
-    }, 5000);
+      }, RULES.rules[13].y[SCORE.level] * 1000);
+    }
   }
 
   function handleResetGame() {
@@ -244,6 +265,14 @@ export default function App() {
           handleFireRule();
         } else if (!RULES.rules[9].isActive && fireRule.current !== null) {
           clearInterval(fireRule.current);
+        }
+        if (RULES.currentRuleNumber >= 13) {
+          if(RULES.rules[13].isActive && RULES.rules[13].isFirstTime) {
+            handleChickenRule();
+            RULES.rules[13].isFirstTime = false;
+          } else if (!RULES.rules[13].isActive && chickenRule.current !== null) {
+            clearInterval(chickenRule.current);
+          }
         }
       }
 

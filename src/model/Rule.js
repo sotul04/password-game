@@ -346,8 +346,9 @@ const RULES = {
             },
             type: 'plain',
             check: function() {
-                const satisfied = stringMatch(PASSWORD.currentPassword, '🥚') > -1;
+                const satisfied = stringMatch(PASSWORD.currentPassword, this.item) > -1;
                 if (this.wasPut && !satisfied && !this.cheatOn) {
+                    console.log("You lose here:", this.item);
                     SCORE.lose = true;
                 }
                 if (!this.satisfies && satisfied) {
@@ -359,6 +360,7 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
+            item: '🥚',
             cheat: function() {
                 RULES.rules[9].isActive = false;
                 let prefix = PASSWORD.currentPassword.substring(0, RULES.indexCheat);
@@ -449,13 +451,31 @@ const RULES = {
                 return `🐔 Paul has hatched ! Please don\'t forget to feed him. He eats ${this.x[SCORE.level]} 🐛 every ${this.y[SCORE.level]} second`;
             },
             type: 'plain',
-            check: null,
+            check: function() {
+                if (this.firstTime) {
+                    this.firstTime = false;
+                    this.isActive = true;
+                    const idxEgg = stringMatch(PASSWORD.currentPassword, '🥚');
+                    let prefix = PASSWORD.currentPassword.substring(0, idxEgg);
+                    let suffix = PASSWORD.currentPassword.substring(idxEgg+2, PASSWORD.currentPassword.length);
+                    PASSWORD.currentPassword = prefix +'🐔'+ suffix;
+                    RULES.rules[10].isActive = false;
+                }
+                if (!this.satisfies) {
+                    SCORE.score += this.point[SCORE.level];
+                }
+                this.satisfies = true;
+                RULES.refreshRules(this.satisfies, this.number);
+            },
             cheat: function() {
-
+                let prefix = PASSWORD.currentPassword.substring(0, RULES.indexCheat);
+                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat+5, PASSWORD.currentPassword.length);
+                this.isActive = false;
+                PASSWORD.currentPassword = prefix + suffix;
             },
             x: [5, 8, 16],
             y: [40, 30, 20],
-            point: [20, 20, 20],
+            point: [20, 40, 60],
             satisfies: false,
             cheatOn: false,
             isActive: false,
@@ -578,7 +598,7 @@ export function checkPassword() {
     }
     else {
         let index = 0;
-        while (index < RULES.currentRuleNumber && index < 13) {
+        while (index < RULES.currentRuleNumber && index < 14) {
             RULES.rules[index].check();
             // console.log('cheking number', index+1, RULES.rules[index].satisfies);
             // console.log('number reached now:', RULES.currentRuleNumber);

@@ -1,3 +1,7 @@
+import PASSWORD from "../model/Password";
+import RULES from "../model/Rule";
+import SCORE from "../model/Score";
+
 import stringMatch from "./kmp";
 
 export function countUppercaseLetters(str) {
@@ -23,11 +27,13 @@ export default function getPasswordScore(str) {
 function getMatchPosition(text, pattern) {
     const position = new Array(text.length).fill(false);
     let prefix = text;
+    let index = 0;
     while (prefix.length >= pattern.length) {
         let first = stringMatch(prefix, pattern);
         if (first !== -1) {
-            position[first] = true;
+            position[first+index] = true;
             prefix = prefix.substring(first+1, prefix.length);
+            index += first+1;
         } else {
             prefix = '';
         }
@@ -40,8 +46,10 @@ export function eraseLastOnePassword(password) {
     let lastIndex = -1;
     let lastWas = false;
     for (let i = 0; i < password.length; i++) {
-        if (!position[i] && lastIndex < i && !lastWas) {
-            lastIndex = i;
+        if (!position[i]) {
+            if (!lastWas) {
+                lastIndex = i;
+            }
             lastWas = false;
         } else if (position[i]) {
             lastWas = true;
@@ -53,4 +61,33 @@ export function eraseLastOnePassword(password) {
         return prefix+suffix;
     }
     return password;
+}
+
+export function eatWorm() {
+    const pass = PASSWORD.currentPassword;
+    const position = getMatchPosition(pass, '🐛');
+    const noWorms = RULES.rules[13].x[SCORE.level];
+
+    const plength = pass.length;
+    const pos = [];
+    for (let i = 0; i < plength; i++) {
+        if (position[i]) {
+            pos.push(i);
+        }
+    }
+    if (pos.length < noWorms) {
+        return false;
+    } else {
+        let prefix = '';
+        let index = 0;
+        for (let i = 0; i < noWorms; i++) {
+            prefix += pass.substring(index, pos[i]);
+            index = pos[i]+2;
+        }
+        if (index < pass.length) {
+            prefix += pass.substring(index, plength);
+        }
+        PASSWORD.currentPassword = prefix;
+        return true;
+    }
 }
