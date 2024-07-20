@@ -1,7 +1,10 @@
 const PASSWORD = {
     currentPassword: "",
     lengthCut: 0,
-    fireEmoji: `🔥`
+    reset: function() {
+        this.currentPassword = "";
+        this.lengthCut = 0;
+    }
 }
 
 export default PASSWORD;

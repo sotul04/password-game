@@ -21,6 +21,13 @@ const RULES = {
         }
     },
     indexCheat: -1,
+    reset: function(){
+        this.currentRuleNumber = 0;
+        this.indexCheat = -1;
+        for (const rule of this.rules) {
+            rule.reset();
+        }
+    },
     rules: [
         {
             number: 1,
@@ -51,6 +58,9 @@ const RULES = {
             x: [5, 10, 20],
             point: [10, 20, 30],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 2,
@@ -73,6 +83,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 3,
@@ -95,6 +108,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 4,
@@ -117,6 +133,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 5,
@@ -146,6 +165,9 @@ const RULES = {
             x: [25, 50, 100],
             point: [10, 20, 30],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 6,
@@ -174,6 +196,9 @@ const RULES = {
             },
             point: [20, 20, 20],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 7,
@@ -196,6 +221,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             /**
@@ -229,6 +257,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 9,
@@ -257,6 +288,9 @@ const RULES = {
             x: [35, 70, 140],
             point: [20, 40, 60],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             /**
@@ -293,7 +327,13 @@ const RULES = {
             firstTime: true,
             isFirstTime: true,
             point: [20, 20, 20],
-            satisfies: true,
+            satisfies: false,
+            reset: function() {
+                this.isActive = false;
+                this.firstTime = true;
+                this.isFirstTime = true;
+                this.satisfies = false;
+            }
         },
         {
             /**
@@ -330,6 +370,11 @@ const RULES = {
             cheatOn: false,
             wasPut: false,
             satisfies: false,
+            reset: function() {
+                this.cheatOn = false;
+                this.wasPut = false;
+                this.satisfies = false;
+            }
         },
         {
             /**
@@ -356,6 +401,9 @@ const RULES = {
             },
             point: [15, 15, 15],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 13,
@@ -386,6 +434,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             /**
@@ -406,6 +457,17 @@ const RULES = {
             y: [40, 30, 20],
             point: [20, 20, 20],
             satisfies: false,
+            cheatOn: false,
+            isActive: false,
+            isFirstTime: true,
+            firstTime: true,
+            reset: function() {
+                this.satisfies = false;
+                this.cheatOn = false;
+                this.isActive = false;
+                this.isFirstTime = true;
+                this.firstTime = true;
+            }
         },
         {
             number: 15,
@@ -420,6 +482,9 @@ const RULES = {
             x: [5, 10, 20],
             point: [10, 20, 30],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 16,
@@ -433,6 +498,9 @@ const RULES = {
             },
             point: [10, 10, 10],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 17,
@@ -447,6 +515,9 @@ const RULES = {
             x: [5, 15, 25],
             point: [10, 20, 30],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 18,
@@ -460,6 +531,9 @@ const RULES = {
             },
             point: [20, 20, 20],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 19,
@@ -473,6 +547,9 @@ const RULES = {
             },
             point: [30, 30, 30],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         },
         {
             number: 20,
@@ -486,6 +563,9 @@ const RULES = {
             },
             point: [40, 40, 40],
             satisfies: false,
+            reset: function() {
+                this.satisfies = false;
+            }
         }
     ]
 }

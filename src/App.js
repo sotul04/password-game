@@ -5,9 +5,11 @@ import Input from "./components/Input/Input";
 import Level from "./components/Level/Level";
 import Header from "./components/Header/Header";
 import RuleBox from "./components/RuleBox/RuleBox";
+import Result from "./components/Result/Result";
+import LevelDialog from "./components/LevelDialog/LevelDialog";
 
 //utils
-import { highlight } from "./util/highlight";
+import { clearNumberHighlight, clearRomanHighlight, highlight } from "./util/highlight";
 import arrayBufferToUrl from "./util/image-decoder";
 import intervalRandom from "./util/random";
 import getPasswordScore, { eraseLastOnePassword } from "./util/password-score";
@@ -29,6 +31,9 @@ export default function App() {
 
   const timer = useRef(null);
   const fireRule = useRef(null);
+  const chickenRule = useRef(null);
+  const dialogResult = useRef();
+  const dialogLevel = useRef();
 
   const [currentPassword, setCurrentPassword] = useState(PASSWORD.currentPassword);
   const [flags, setFlags] = useState([]);
@@ -49,6 +54,7 @@ export default function App() {
     ...RULES
   });
   const [inputHighlight, setInputHighlight] = useState([...highlight]);
+  const [userWin, setUserWin] = useState(null);
 
   // loading flags and captchas
   useEffect(() => {
@@ -123,6 +129,15 @@ export default function App() {
   }
 
   function handleLevelChange(newLevel) {
+    if (SCORE.level !== LEVEL[newLevel]) {
+      SCORE.newLevel = newLevel;
+      dialogLevel.current.changeNewLevel(newLevel);
+      dialogLevel.current.open();
+    }
+  }
+
+  function changeLevel(newLevel) {
+    handleResetGame();
     SCORE.level = LEVEL[newLevel];
     setLevel(newLevel);
   }
@@ -136,7 +151,7 @@ export default function App() {
     fireRule.current = setInterval(() => {
       if (RULES.rules[9].isActive) {
         if (isFire() || RULES.rules[9].isFirstTime) {
-          const newPassword = PASSWORD.currentPassword+'🔥';
+          const newPassword = PASSWORD.currentPassword + '🔥';
           console.log(newPassword);
           RULES.rules[9].isFirstTime = false;
           handlePasswordChange(newPassword);
@@ -147,7 +162,55 @@ export default function App() {
           handlePasswordChange(newPassword);
         }
       }
-    },5000);
+    }, 5000);
+  }
+
+  function handleResetGame() {
+    //reset the rules
+    RULES.reset();
+
+    // reset the password
+    PASSWORD.reset();
+
+    // reset the Score
+    SCORE.reset();
+
+    // reset the flags
+    const selectedFlags = flags.slice(0, Math.min(3, flags.length));
+    FLAG_CAPTCHA.currentFlags = selectedFlags;
+
+    // reset the captcha
+    if (captchas.length !== 0) {
+      const selectedCaptcha = captchas[intervalRandom(captchas.length)];
+      FLAG_CAPTCHA.currentCaptcha = selectedCaptcha;
+    }
+
+    // clear rule interval
+    if (fireRule.current !== null) {
+      clearInterval(fireRule.current);
+    }
+    if (chickenRule.current !== null) {
+      clearInterval(chickenRule.current);
+    }
+
+    initState = true;
+
+    //clear highlight
+    clearNumberHighlight();
+    clearRomanHighlight();
+
+    // reset State
+    handlePasswordChange("");
+    setCurrentFlags(selectedFlags);
+    setCurrentCaptcha(FLAG_CAPTCHA.currentCaptcha);
+    handleLevelChange('Easy');
+    const newBestScore = JSON.parse(localStorage.getItem(localGameName)) || 0;
+    setScore({
+      score: 0,
+      bestScore: newBestScore
+    });
+    setRuleSatisfied({...RULES});
+    setInputHighlight([...highlight]);
   }
 
   // For password change reevaluation
@@ -156,17 +219,23 @@ export default function App() {
     timer.current = setTimeout(() => {
       RULES.indexCheat = stringMatch(PASSWORD.currentPassword, 'cheat');
       if (RULES.indexCheat !== -1) {
-        RULES.rules[RULES.currentRuleNumber-1].cheat();
+        RULES.rules[RULES.currentRuleNumber - 1].cheat();
         if (PASSWORD.currentPassword !== currentPassword) {
           handlePasswordChange(PASSWORD.currentPassword);
         }
       }
 
       // checking password
-      if (!initState){
+      if (!initState) {
         checkPassword();
       } else {
         initState = false;
+      }
+
+      if (SCORE.lose || SCORE.win) {
+        setUserWin(SCORE.win);
+        dialogResult.current.open();
+        return;
       }
 
       // activate password fire rule
@@ -194,6 +263,8 @@ export default function App() {
 
   return (
     <>
+      <Result ref={dialogResult} userWin={userWin} score={score.score} onReset={handleResetGame} />
+      <LevelDialog ref={dialogLevel} onChangeLevel={changeLevel}/>
       <Header score={score} />
       <Input value={currentPassword} onChange={handlePasswordChange} highlight={inputHighlight} />
       <Level level={level} onChange={handleLevelChange} />
