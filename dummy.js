@@ -128,3 +128,10 @@ function eraseLastOnePassword(password) {
 }
 
 console.log(eraseLastOnePassword("🔥asdasdadasda1🔥"));
+
+let d = new Date();
+
+console.log(d.getHours());
+console.log(d.getMinutes());
+
+console.log([1,2,3]+[4,5,6]);

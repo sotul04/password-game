@@ -6,22 +6,23 @@ import { countDigits, countSpecialCharacters, countUppercaseLetters } from "../u
 import stringMatch from "../util/kmp";
 import { addNumberHighlight, addRomanHighlight, clearNumberHighlight, clearRomanHighlight } from "../util/highlight";
 import romanToDecimal from "../util/roman-parse";
+import PRIME_SET from "./PrimeNumber";
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const RULES = {
     currentRuleNumber: 0,
-    refreshRules: function(satisfied, number) {
+    refreshRules: function (satisfied, number) {
         if (number === 1 && !satisfied && this.currentRuleNumber === 0) {
             this.currentRuleNumber = 1;
             return;
         }
         if (satisfied && this.currentRuleNumber <= number) {
-            this.currentRuleNumber = number+1;
+            this.currentRuleNumber = number + 1;
         }
     },
     indexCheat: -1,
-    reset: function(){
+    reset: function () {
         this.currentRuleNumber = 0;
         this.indexCheat = -1;
         for (const rule of this.rules) {
@@ -31,9 +32,9 @@ const RULES = {
     rules: [
         {
             number: 1,
-            description: function() {
+            description: function () {
                 return `Your password must be at least ${this.x[SCORE.level]} characters`;
-            }, 
+            },
             type: 'plain',
             check: function () {
                 const satisfied = PASSWORD.currentPassword.length >= this.x[SCORE.level];
@@ -45,12 +46,12 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
                 let prefix = PASSWORD.currentPassword.substring(0, RULES.indexCheat);
-                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat+5, PASSWORD.currentPassword.length);
+                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat + 5, PASSWORD.currentPassword.length);
                 let remainChars = this.x[SCORE.level] - (prefix.length + suffix.length);
                 let remain = '0';
-                if (remainChars > 0){
+                if (remainChars > 0) {
                     remain = remain.repeat(remainChars);
                 }
                 PASSWORD.currentPassword = prefix + remain + suffix;
@@ -58,17 +59,17 @@ const RULES = {
             x: [5, 10, 20],
             point: [10, 20, 30],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 2,
-            description: function() {
+            description: function () {
                 return 'Your password must include a number';
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 const satisfied = countDigits(PASSWORD.currentPassword) > 0;
                 if (!this.satisfies && satisfied) {
                     SCORE.score += this.point[SCORE.level];
@@ -78,22 +79,22 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 3,
-            description: function() {
+            description: function () {
                 return 'Your password must include an uppercase letter';
             },
             type: 'plain',
-            check: function() { 
+            check: function () {
                 const satisfied = countUppercaseLetters(PASSWORD.currentPassword) > 0;
                 if (!this.satisfies && satisfied) {
                     SCORE.score += this.point[SCORE.level];
@@ -103,22 +104,22 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 4,
-            description: function(){
+            description: function () {
                 return 'Your password must include a special character';
             },
             type: 'plain',
-            check: function() { 
+            check: function () {
                 const satisfied = countSpecialCharacters(PASSWORD.currentPassword) > 0;
                 if (!this.satisfies && satisfied) {
                     SCORE.score += this.point[SCORE.level];
@@ -128,22 +129,22 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 5,
-            description: function() {
+            description: function () {
                 return `The digits in your password must add up to ${this.x[SCORE.level]}`
             },
             type: 'plain',
-            check: function() { 
+            check: function () {
                 const sumNumber = extractDigit(PASSWORD.currentPassword).reduce((acc, val) => acc + val, 0);
                 const satisfied = sumNumber === this.x[SCORE.level];
                 if (!this.satisfies && satisfied) {
@@ -159,23 +160,23 @@ const RULES = {
                     clearNumberHighlight();
                 }
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             x: [25, 50, 100],
             point: [10, 20, 30],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 6,
-            description: function() {
+            description: function () {
                 return 'Your password must include a month of the year';
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 let satisfied = false;
                 for (const month of months) {
                     if (stringMatch(PASSWORD.currentPassword, month) !== -1) {
@@ -191,22 +192,22 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [20, 20, 20],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 7,
-            description: function() {
+            description: function () {
                 return 'Your password must include a Roman numeral';
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 const satisfied = extractRomanNumber(PASSWORD.currentPassword).length > 0;
                 if (!this.satisfies && satisfied) {
                     SCORE.score += this.point[SCORE.level];
@@ -216,12 +217,12 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
@@ -231,11 +232,11 @@ const RULES = {
              * Tampilkan X bendera saja pada 1 sesi permainan)
              */
             number: 8,
-            description: function() {
+            description: function () {
                 return 'Your password must include one of this country:';
             },
             type: 'country',
-            check: function() {
+            check: function () {
                 let satisfied = false;
                 for (const flag of FLAG_CAPTCHA.currentFlags) {
                     const strings = PASSWORD.currentPassword.match(new RegExp(`${flag.title}`, 'gi')) || [];
@@ -252,22 +253,22 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 9,
-            description: function() { 
+            description: function () {
                 return `The Roman numerals in your password should multiply to ${this.x[SCORE.level]}`;
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 const satisfied = extractRomanNumber(PASSWORD.currentPassword).reduce((acc, val) => acc * romanToDecimal(val), 1) === this.x[SCORE.level];
                 if (!this.satisfies && satisfied) {
                     SCORE.score += this.point[SCORE.level];
@@ -282,13 +283,13 @@ const RULES = {
                     clearRomanHighlight();
                 }
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             x: [35, 70, 140],
             point: [20, 40, 60],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
@@ -302,11 +303,11 @@ const RULES = {
              * kembali kapanpun dan pemain perlu menghapusnya kembali)
             */
             number: 10,
-            description: function() {
+            description: function () {
                 return 'Oh no! Your password is on fire 🔥. Quick, put it out!';
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 if (this.firstTime) {
                     this.firstTime = false;
                     this.isActive = true;
@@ -317,9 +318,9 @@ const RULES = {
                 this.satisfies = true;
                 RULES.refreshRules(this.satisfies, this.number);
             },
-            cheat: function() {
+            cheat: function () {
                 let prefix = PASSWORD.currentPassword.substring(0, RULES.indexCheat);
-                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat+5, PASSWORD.currentPassword.length);
+                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat + 5, PASSWORD.currentPassword.length);
                 this.isActive = false;
                 PASSWORD.currentPassword = prefix + suffix;
             },
@@ -328,7 +329,7 @@ const RULES = {
             isFirstTime: true,
             point: [20, 20, 20],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.isActive = false;
                 this.firstTime = true;
                 this.isFirstTime = true;
@@ -341,11 +342,11 @@ const RULES = {
              * Kalau terhapus, pemain dinyatakan kalah)
              */
             number: 11,
-            description: function() {
+            description: function () {
                 return '🥚 This is my chicken Paul. He hasn\'t hatched yet. Please put him in your password and keep him safe';
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 const satisfied = stringMatch(PASSWORD.currentPassword, this.item) > -1;
                 if (this.wasPut && !satisfied && !this.cheatOn) {
                     console.log("You lose here:", this.item);
@@ -361,18 +362,18 @@ const RULES = {
                 this.satisfies = satisfied;
             },
             item: '🥚',
-            cheat: function() {
+            cheat: function () {
                 RULES.rules[9].isActive = false;
                 let prefix = PASSWORD.currentPassword.substring(0, RULES.indexCheat);
-                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat+5, PASSWORD.currentPassword.length);
+                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat + 5, PASSWORD.currentPassword.length);
                 this.cheatOn = true;
-                PASSWORD.currentPassword = '🥚'+prefix+suffix;
+                PASSWORD.currentPassword = '🥚' + prefix + suffix;
             },
             point: [10, 10, 10],
             cheatOn: false,
             wasPut: false,
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.cheatOn = false;
                 this.wasPut = false;
                 this.satisfies = false;
@@ -385,11 +386,11 @@ const RULES = {
              * Gambar CAPTCHA dapat seolah-olah di-refresh untuk mengganti gambar CAPTCHA)
              */
             number: 12,
-            description: function() {
+            description: function () {
                 return 'Your password must include this CAPTCHA:';
             },
             type: 'captcha',
-            check: function() {
+            check: function () {
                 const satisfied = stringMatch(PASSWORD.currentPassword, FLAG_CAPTCHA.currentCaptcha.title) > -1;
                 if (!this.satisfies && satisfied) {
                     SCORE.score += this.point[SCORE.level];
@@ -399,26 +400,26 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
             },
             point: [15, 15, 15],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 13,
-            description: function() {
+            description: function () {
                 return 'Your password must include a leap year';
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 let satisfied = false;
                 const extractedNumberString = extractNumber(PASSWORD.currentPassword);
                 const extractedNumber = extractedNumberString.map(Number);
                 for (const number of extractedNumber) {
-                    if ((number%4 === 0 && number%100 !== 0) || number%400 === 0) {
+                    if ((number % 4 === 0 && number % 100 !== 0) || number % 400 === 0) {
                         satisfied = true;
                         break;
                     }
@@ -431,12 +432,12 @@ const RULES = {
                 RULES.refreshRules(satisfied, this.number);
                 this.satisfies = satisfied;
             },
-            cheat: function() {
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
@@ -447,29 +448,31 @@ const RULES = {
              * Jika dalam X detik tersebut terdapat < Y ulat, pemain dinyatakan kalah)
              */
             number: 14,
-            description: function(){
-                return `🐔 Paul has hatched ! Please don\'t forget to feed him. He eats ${this.x[SCORE.level]} 🐛 every ${this.y[SCORE.level]} second`;
+            description: function () {
+                return `🐔 Paul has hatched ! Please don't forget to feed him. He eats ${this.x[SCORE.level]} 🐛 every ${this.y[SCORE.level]} seconds`;
             },
             type: 'plain',
-            check: function() {
+            check: function () {
                 if (this.firstTime) {
                     this.firstTime = false;
                     this.isActive = true;
                     const idxEgg = stringMatch(PASSWORD.currentPassword, '🥚');
                     let prefix = PASSWORD.currentPassword.substring(0, idxEgg);
-                    let suffix = PASSWORD.currentPassword.substring(idxEgg+2, PASSWORD.currentPassword.length);
-                    PASSWORD.currentPassword = prefix +'🐔'+ suffix;
-                    RULES.rules[10].isActive = false;
+                    let suffix = PASSWORD.currentPassword.substring(idxEgg + 2, PASSWORD.currentPassword.length);
+                    PASSWORD.currentPassword = prefix + '🐔' + suffix;
+                    RULES.rules[10].item = '🐔';
                 }
                 if (!this.satisfies) {
                     SCORE.score += this.point[SCORE.level];
+                    PASSWORD.lengthCut = PASSWORD.currentPassword.length - RULES.rules[14].x[SCORE.level];
+                    console.log(`Your must delete ${RULES.rules[14].x[SCORE.level]} characters.`, `Your new password length must be ${PASSWORD.lengthCut}`);
                 }
                 this.satisfies = true;
                 RULES.refreshRules(this.satisfies, this.number);
             },
-            cheat: function() {
+            cheat: function () {
                 let prefix = PASSWORD.currentPassword.substring(0, RULES.indexCheat);
-                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat+5, PASSWORD.currentPassword.length);
+                let suffix = PASSWORD.currentPassword.substring(RULES.indexCheat + 5, PASSWORD.currentPassword.length);
                 this.isActive = false;
                 PASSWORD.currentPassword = prefix + suffix;
             },
@@ -481,7 +484,7 @@ const RULES = {
             isActive: false,
             isFirstTime: true,
             firstTime: true,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
                 this.cheatOn = false;
                 this.isActive = false;
@@ -491,99 +494,171 @@ const RULES = {
         },
         {
             number: 15,
-            description: function(){
+            description: function () {
                 return `A sacrifice must be made. Pick ${this.x[SCORE.level]} letters that you will no longer be able to use`;
             },
             type: 'plain',
-            check: null,
-            cheat: function() {
+            check: function () {
+                let satisfied = PASSWORD.currentPassword.length <= PASSWORD.lengthCut;
+                if (this.satisfies) {
+                    satisfied = true;
+                }
+                if (!this.satisfies && satisfied) {
+                    SCORE.score += this.point[SCORE.level];
+                } else if (this.satisfies && !satisfied) {
+                    SCORE.score -= this.point[SCORE.level];
+                }
+                RULES.refreshRules(satisfied, this.number);
+                this.satisfies = satisfied;
+            },
+            cheat: function () {
 
             },
-            x: [5, 10, 20],
+            x: [5, 10, 15],
             point: [10, 20, 30],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 16,
-            description: function() {
+            description: function () {
                 return 'Your password must contain one of the following words: I want IRK | I need IRK | I love IRK';
             },
             type: 'plain',
-            check: null,
-            cheat: function() {
+            check: function () {
+                const satisfied = stringMatch(PASSWORD.currentPassword, 'I want IRK') + stringMatch(PASSWORD.currentPassword, 'I need IRK') + stringMatch(PASSWORD.currentPassword, 'I love IRK') > -3;
+                if (!this.satisfies && satisfied) {
+                    SCORE.score += this.point[SCORE.level];
+                } else if (this.satisfies && !satisfied) {
+                    SCORE.score -= this.point[SCORE.level];
+                }
+                RULES.refreshRules(satisfied, this.number);
+                this.satisfies = satisfied;
+            },
+            cheat: function () {
 
             },
             point: [10, 10, 10],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 17,
-            description: function() {
+            description: function () {
                 return `At least ${this.x[SCORE.level]}% of your password must be in digits`
             },
             type: 'plain',
-            check: null,
-            cheat: function() {
+            check: function () {
+                const satisfied = extractDigit(PASSWORD.currentPassword).length * 100 >= PASSWORD.currentPassword.length * this.x[SCORE.level];
+                if (!this.satisfies && satisfied) {
+                    SCORE.score += this.point[SCORE.level];
+                } else if (this.satisfies && !satisfied) {
+                    SCORE.score -= this.point[SCORE.level];
+                }
+                RULES.refreshRules(satisfied, this.number);
+                this.satisfies = satisfied;
+            },
+            cheat: function () {
 
             },
             x: [5, 15, 25],
             point: [10, 20, 30],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 18,
-            description: function() {
+            description: function () {
                 return 'Your password must include the length of your password';
             },
             type: 'plain',
-            check: null,
-            cheat: function() {
+            check: function () {
+                let satisfied = false;
+                const extractedNumber = extractNumber(PASSWORD.currentPassword).map(Number);
+                for (const number of extractedNumber) {
+                    if (number === PASSWORD.currentPassword.length) {
+                        satisfied = true;
+                        break;
+                    }
+                }
+                if (!this.satisfies && satisfied) {
+                    SCORE.score += this.point[SCORE.level];
+                } else if (this.satisfies && !satisfied) {
+                    SCORE.score -= this.point[SCORE.level];
+                }
+                RULES.refreshRules(satisfied, this.number);
+                this.satisfies = satisfied;
+            },
+            cheat: function () {
 
             },
             point: [20, 20, 20],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 19,
-            description: function(){
+            description: function () {
                 return 'The length of your password must be a prime number';
             },
             type: 'plain',
-            check: null,
-            cheat: function() {
+            check: function () {
+                const satisfied = PRIME_SET.get(PASSWORD.currentPassword.length);
+                if (!this.satisfies && satisfied) {
+                    SCORE.score += this.point[SCORE.level];
+                } else if (this.satisfies && !satisfied) {
+                    SCORE.score -= this.point[SCORE.level];
+                }
+                RULES.refreshRules(satisfied, this.number);
+                this.satisfies = satisfied;
+            },
+            cheat: function () {
 
             },
             point: [30, 30, 30],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         },
         {
             number: 20,
-            description: function() {
+            description: function () {
                 return 'Your password must include the current time';
             },
             type: 'plain',
-            check: null,
-            cheat: function() {
+            check: function () {
+                let date = new Date();
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+                const pattern1 = `${hour}:${minute}`;
+                const pattern2 = `${hour}${minute}`;
+                console.log('Current time:',pattern1, pattern2);
+                const satisfied = stringMatch(PASSWORD.currentPassword, pattern1) + stringMatch(PASSWORD.currentPassword, pattern2) > -2;
+                if (!this.satisfies && satisfied) {
+                    SCORE.score += this.point[SCORE.level];
+                } else if (this.satisfies && !satisfied) {
+                    SCORE.score -= this.point[SCORE.level];
+                }
+                if (satisfied) {
+                    SCORE.win = true;
+                }
+                this.satisfies = satisfied;
+            },
+            cheat: function () {
 
             },
             point: [40, 40, 40],
             satisfies: false,
-            reset: function() {
+            reset: function () {
                 this.satisfies = false;
             }
         }
@@ -598,10 +673,8 @@ export function checkPassword() {
     }
     else {
         let index = 0;
-        while (index < RULES.currentRuleNumber && index < 14) {
+        while (index < RULES.currentRuleNumber && index < 20) {
             RULES.rules[index].check();
-            // console.log('cheking number', index+1, RULES.rules[index].satisfies);
-            // console.log('number reached now:', RULES.currentRuleNumber);
             index++;
         }
     }

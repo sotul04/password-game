@@ -14,7 +14,6 @@ import arrayBufferToUrl from "./util/image-decoder";
 import intervalRandom from "./util/random";
 import getPasswordScore, { eatWorm, eraseLastOnePassword } from "./util/password-score";
 import stringMatch from "./util/kmp";
-import { extractDigit } from "./util/extract";
 import isFire from "./util/probs";
 
 import PASSWORD from "./model/Password";
@@ -168,6 +167,16 @@ export default function App() {
     }
   }
 
+  function clearRuleInterval() {
+    // clear rule interval
+    if (fireRule.current !== null) {
+      clearInterval(fireRule.current);
+    }
+    if (chickenRule.current !== null) {
+      clearInterval(chickenRule.current);
+    }
+  }
+
   function handleChickenRule() {
     if (chickenRule.current === null) {
       console.log("Chicken Rule is activated.");
@@ -178,8 +187,8 @@ export default function App() {
           } else {
             SCORE.lose = true;
             setUserWin(SCORE.win);
+            clearRuleInterval();
             dialogResult.current.open();
-            clearInterval(chickenRule.current);
           }
         }
       }, RULES.rules[13].y[SCORE.level] * 1000);
@@ -204,14 +213,6 @@ export default function App() {
     if (captchas.length !== 0) {
       const selectedCaptcha = captchas[intervalRandom(captchas.length)];
       FLAG_CAPTCHA.currentCaptcha = selectedCaptcha;
-    }
-
-    // clear rule interval
-    if (fireRule.current !== null) {
-      clearInterval(fireRule.current);
-    }
-    if (chickenRule.current !== null) {
-      clearInterval(chickenRule.current);
     }
 
     initState = true;
@@ -249,12 +250,16 @@ export default function App() {
       // checking password
       if (!initState) {
         checkPassword();
+        if (PASSWORD.currentPassword !== currentPassword) {
+          handlePasswordChange(PASSWORD.currentPassword);
+        }
       } else {
         initState = false;
       }
 
       if (SCORE.lose || SCORE.win) {
         setUserWin(SCORE.win);
+        clearRuleInterval();
         dialogResult.current.open();
         return;
       }
@@ -288,7 +293,7 @@ export default function App() {
       setRuleSatisfied({ ...RULES });
       setInputHighlight([...highlight]);
     }, 200);
-  }, [currentPassword, level]);
+  }, [currentPassword]);
 
   return (
     <>
