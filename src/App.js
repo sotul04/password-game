@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // game components
 import Input from "./components/Input/Input";
@@ -16,6 +16,7 @@ import getPasswordScore, { eatWorm, eraseLastOnePassword } from "./util/password
 import stringMatch from "./util/kmp";
 import isFire from "./util/probs";
 
+//models
 import PASSWORD from "./model/Password";
 import SCORE, { LEVEL } from "./model/Score";
 import RULES, { checkPassword } from "./model/Rule";
@@ -146,7 +147,7 @@ export default function App() {
     setCurrentPassword(newPassword);
   }
 
-  function handleFireRule() {
+  const handleFireRule = useCallback(() => {
     if (fireRule.current === null) {
       console.log("Fire is try to attack your password.");
       fireRule.current = setInterval(() => {
@@ -165,19 +166,9 @@ export default function App() {
         }
       }, 8000);
     }
-  }
+  }, []);
 
-  function clearRuleInterval() {
-    // clear rule interval
-    if (fireRule.current !== null) {
-      clearInterval(fireRule.current);
-    }
-    if (chickenRule.current !== null) {
-      clearInterval(chickenRule.current);
-    }
-  }
-
-  function handleChickenRule() {
+  const handleChickenRule = useCallback(() => {
     if (chickenRule.current === null) {
       console.log("Chicken Rule is activated.");
       chickenRule.current = setInterval(() => {
@@ -192,6 +183,16 @@ export default function App() {
           }
         }
       }, RULES.rules[13].y[SCORE.level] * 1000);
+    }
+  }, []);
+
+  function clearRuleInterval() {
+    // clear rule interval
+    if (fireRule.current !== null) {
+      clearInterval(fireRule.current);
+    }
+    if (chickenRule.current !== null) {
+      clearInterval(chickenRule.current);
     }
   }
 
@@ -231,7 +232,7 @@ export default function App() {
       score: 0,
       bestScore: newBestScore
     });
-    setRuleSatisfied({...RULES});
+    setRuleSatisfied({ ...RULES });
     setInputHighlight([...highlight]);
   }
 
@@ -241,7 +242,11 @@ export default function App() {
     timer.current = setTimeout(() => {
       RULES.indexCheat = stringMatch(PASSWORD.currentPassword, 'cheat');
       if (RULES.indexCheat !== -1) {
-        RULES.rules[RULES.currentRuleNumber - 1].cheat();
+        let rulecheat = RULES.currentRuleNumber - 1;
+        if (rulecheat < 0) {
+          rulecheat = 0;
+        }
+        RULES.rules[rulecheat].cheat();
         if (PASSWORD.currentPassword !== currentPassword) {
           handlePasswordChange(PASSWORD.currentPassword);
         }
@@ -272,7 +277,7 @@ export default function App() {
           clearInterval(fireRule.current);
         }
         if (RULES.currentRuleNumber >= 13) {
-          if(RULES.rules[13].isActive && RULES.rules[13].isFirstTime) {
+          if (RULES.rules[13].isActive && RULES.rules[13].isFirstTime) {
             handleChickenRule();
             RULES.rules[13].isFirstTime = false;
           } else if (!RULES.rules[13].isActive && chickenRule.current !== null) {
@@ -293,12 +298,12 @@ export default function App() {
       setRuleSatisfied({ ...RULES });
       setInputHighlight([...highlight]);
     }, 200);
-  }, [currentPassword]);
+  }, [currentPassword, handleChickenRule, handleFireRule]);
 
   return (
     <>
       <Result ref={dialogResult} userWin={userWin} score={score.score} onReset={handleResetGame} />
-      <LevelDialog ref={dialogLevel} onChangeLevel={changeLevel}/>
+      <LevelDialog ref={dialogLevel} onChangeLevel={changeLevel} />
       <Header score={score} />
       <Input value={currentPassword} onChange={handlePasswordChange} highlight={inputHighlight} />
       <Level level={level} onChange={handleLevelChange} />
