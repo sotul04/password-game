@@ -11,7 +11,7 @@ import LevelDialog from "./components/LevelDialog/LevelDialog";
 //utils
 import { clearNumberHighlight, clearRomanHighlight, highlight } from "./util/highlight";
 import arrayBufferToUrl from "./util/image-decoder";
-import intervalRandom from "./util/random";
+import intervalRandom, { getListIndexRandomly } from "./util/random";
 import getPasswordScore, { eatWorm, eraseLastOnePassword } from "./util/password-score";
 import stringMatch from "./util/kmp";
 import isFire from "./util/probs";
@@ -104,9 +104,10 @@ export default function App() {
 
   //trigger current flags
   useEffect(() => {
-    const selectedFlags = flags.slice(0, Math.min(3, flags.length));
-    FLAG_CAPTCHA.currentFlags = selectedFlags;
-    setCurrentFlags(selectedFlags);
+    const array = getListIndexRandomly(flags.length, Math.min(4, flags.length));
+    let newFlags = array.map(elm => flags[elm]);
+    FLAG_CAPTCHA.currentFlags = newFlags;
+    setCurrentFlags(newFlags);
   }, [flags]);
 
   //trigger current captcha
@@ -116,6 +117,13 @@ export default function App() {
     FLAG_CAPTCHA.currentCaptcha = selectedCaptcha;
     setCurrentCaptcha(selectedCaptcha);
   }, [captchas]);
+
+  function handleRefreshFlags() {
+    const array = getListIndexRandomly(flags.length, Math.min(4, flags.length));
+    let newFlags = array.map(elm => flags[elm]);
+    FLAG_CAPTCHA.currentFlags = newFlags;
+    setCurrentFlags(newFlags);
+  }
 
   function handleRefreshCaptcha() {
     let captchaLength = captchas.length;
@@ -206,25 +214,24 @@ export default function App() {
     // reset the Score
     SCORE.reset();
 
-    // reset the flags
-    const selectedFlags = flags.slice(0, Math.min(3, flags.length));
-    FLAG_CAPTCHA.currentFlags = selectedFlags;
-
+    
     // reset the captcha
     if (captchas.length !== 0) {
       const selectedCaptcha = captchas[intervalRandom(captchas.length)];
       FLAG_CAPTCHA.currentCaptcha = selectedCaptcha;
     }
-
+    
     initState = true;
-
+    
     //clear highlight
     clearNumberHighlight();
     clearRomanHighlight();
 
+    // reset the flags
+    handleRefreshFlags();
+
     // reset State
     handlePasswordChange("");
-    setCurrentFlags(selectedFlags);
     setCurrentCaptcha(FLAG_CAPTCHA.currentCaptcha);
     handleLevelChange('Easy');
     const newBestScore = JSON.parse(localStorage.getItem(localGameName)) || 0;
