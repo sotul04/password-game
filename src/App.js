@@ -172,7 +172,7 @@ export default function App() {
             handlePasswordChange(newPassword);
           }
         }
-      }, 8000);
+      }, 10000);
     }
   }, []);
 
